@@ -18,6 +18,7 @@
     .req-label { color: var(--danger); font-weight: bold; }
     .grid-inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
     .input-box { display: flex; flex-direction: column; background: #f8fafc; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; }
+    .input-box.recorded { background: #e5e7eb; border-color: #9ca3af; }
     .input-box label { font-size: 0.75em; color: var(--secondary); margin-bottom: 4px; text-align: center; font-weight: bold; }
     .input-box input { width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; font-weight: bold; box-sizing: border-box; font-size: 16px; }
     .out-of-range { color: var(--danger) !important; font-weight: bold; }
@@ -50,23 +51,24 @@
 
     #pdfReport { display: none; }
     @media print {
-      @page { margin: 12mm; size: A4 portrait; }
+      @page { margin: 8mm; size: A4 portrait; }
       body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .container { display: none !important; }
-      #pdfReport { display: block !important; width: 100%; font-size: 12px; }
+      #pdfReport { display: block !important; width: 100%; font-size: 10px; line-height: 1.2; }
       .p-logo-placeholder { position: absolute; top: 0; right: 0; width: 120px; height: 60px; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #999; font-size: 10px; text-align: center; }
-      .p-header { text-align: center; border-bottom: 3px solid #333; padding-bottom: 8px; margin-bottom: 15px; position: relative; }
-      .p-section { margin-bottom: 15px; border: 1px solid #ccc; padding: 10px; border-radius: 5px; page-break-inside: avoid; }
-      .p-title { font-weight: bold; background: #f1f5f9; padding: 6px 12px; margin: -10px -10px 10px -10px; border-bottom: 1px solid #ccc; font-size: 1.1em; }
-      .p-table { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
-      .p-table th, .p-table td { border: 1px solid #eee; padding: 8px; text-align: left; }
-      .p-table th { background: #fafafa; width: 25%; color: #475569; font-size: 11px; }
+      .p-header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 6px; margin-bottom: 8px; position: relative; }
+      .p-header h1 { margin: 0 0 4px; font-size: 18px; }
+      .p-section { margin-bottom: 8px; border: 1px solid #ccc; padding: 6px; border-radius: 5px; page-break-inside: avoid; }
+      .p-title { font-weight: bold; background: #f1f5f9; padding: 4px 8px; margin: -6px -6px 6px -6px; border-bottom: 1px solid #ccc; font-size: 1em; }
+      .p-table { width: 100%; border-collapse: collapse; margin-bottom: 2px; }
+      .p-table th, .p-table td { border: 1px solid #eee; padding: 5px; text-align: left; }
+      .p-table th { background: #fafafa; width: 25%; color: #475569; font-size: 10px; }
       .green-text { color: #32CD32 !important; font-weight: bold; }
       .red-text { color: #dc2626 !important; font-weight: bold; }
-      #p-chart-box { width: 100%; height: 380px; text-align: center; margin: 15px 0; border: 1px solid #f0f0f0; }
-      .page-break { page-break-before: always; }
-      .p-data-grid { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid #bbb; }
-      .p-data-item { border: 0.5px solid #eee; padding: 5px 8px; display: flex; justify-content: space-between; font-size: 11px; }
+      #p-chart-box { width: 100%; height: 185px; text-align: center; margin: 6px 0 2px; border: 1px solid #f0f0f0; }
+      .page-break { display: none; }
+      .p-data-grid { display: grid; grid-template-columns: repeat(5, 1fr); border: 1px solid #bbb; }
+      .p-data-item { border: 0.5px solid #eee; padding: 2px 4px; display: flex; justify-content: space-between; font-size: 9px; gap: 4px; }
     }
   </style>
 </head>
@@ -299,7 +301,7 @@
           <div class="input-box">
             <label>No.${i}</label>
             <input type="text" inputmode="decimal" class="data-in" id="input-${i}" oninput="autosave();">
-            <button class="btn-record-light" onclick="recTime('t-data-${i}'); autosave();">記錄</button>
+            <button class="btn-record-light" onclick="recTime('t-data-${i}', 'input-${i}'); autosave();">記錄</button>
             <div class="time-msg" id="t-data-${i}"></div>
           </div>
         `;
@@ -313,9 +315,16 @@
              d.getMinutes().toString().padStart(2,'0') + ":" +
              d.getSeconds().toString().padStart(2,'0');
     }
-    function recTime(id) {
+    function recTime(id, inputId = "") {
       const el = document.getElementById(id);
       if (el) el.innerText = getTime();
+      if (inputId) {
+        const inputEl = document.getElementById(inputId);
+        if (inputEl) {
+          const box = inputEl.closest('.input-box');
+          if (box) box.classList.add('recorded');
+        }
+      }
     }
 
     // ===== 誤差/點數推導 =====
@@ -770,6 +779,7 @@
       });
 
       document.querySelectorAll('.time-msg').forEach(el => el.innerText = '');
+      document.querySelectorAll('.input-box.recorded').forEach(el => el.classList.remove('recorded'));
       document.getElementById('resAvg').innerText = '-';
       document.getElementById('resStd').innerText = '-';
       document.getElementById('resCpk').innerText = '-';
@@ -841,6 +851,14 @@
         for (const [id, val] of Object.entries(data.times || {})) {
           const el = document.getElementById(id);
           if (el) el.innerText = val;
+        }
+
+        for (let i = 1; i <= 30; i++) {
+          const t = document.getElementById('t-data-' + i);
+          if (t && t.innerText.trim()) {
+            const box = document.getElementById('input-' + i)?.closest('.input-box');
+            if (box) box.classList.add('recorded');
+          }
         }
       } catch (_) { /* ignore */ }
     }
