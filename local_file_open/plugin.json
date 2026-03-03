@@ -1,0 +1,38 @@
+{
+  "active": true,
+  "hubId": "local_file_open",
+  "name": "local_file_open",
+  "schema": "skill-1.0.0",
+  "version": "1.0.0",
+  "description": "Open Windows File Explorer to a folder or reveal a file by path.",
+  "author": "OpenAI",
+  "license": "MIT",
+  "examples": [
+    {
+      "prompt": "打開 D:\\KM資料庫 這個資料夾",
+      "call": "{\"path\":\"D:\\\\KM資料庫\",\"mode\":\"open\"}"
+    },
+    {
+      "prompt": "在檔案總管顯示並選取 D:\\KM資料庫\\切割機\\規格書.pdf",
+      "call": "{\"path\":\"D:\\\\KM資料庫\\\\切割機\\\\規格書.pdf\",\"mode\":\"select\"}"
+    },
+    {
+      "prompt": "幫我打開 C:\\Users\\USER\\Desktop",
+      "call": "{\"path\":\"C:\\\\Users\\\\USER\\\\Desktop\",\"mode\":\"open\"}"
+    }
+  ],
+  "entrypoint": {
+    "file": "handler.js",
+    "params": {
+      "path": {
+        "description": "Absolute Windows path to a file or folder that should be opened in File Explorer.",
+        "type": "string"
+      },
+      "mode": {
+        "description": "Use 'open' to open a folder or parent folder, or 'select' to reveal and select a file or folder.",
+        "type": "string"
+      }
+    }
+  },
+  "imported": true
+}
